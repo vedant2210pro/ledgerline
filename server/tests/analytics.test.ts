@@ -36,6 +36,19 @@ before(async()=>{try{
  throw new Error(safeError(e));
 }});
 after(async()=>{await pool.end();if(db){for(const id of [...Object.values(actors).map(a=>a.id),...createdIds]){await db.execute("UPDATE users SET account_status='disabled' WHERE user_id=?",[id]);await db.execute('UPDATE sessions SET revoked_at=UTC_TIMESTAMP(6) WHERE user_id=? AND revoked_at IS NULL',[id]);}await db.end();}});
+test('Vercel rewrite metadata does not invalidate filters and unknown filters still fail',async()=>{
+ const hosted=createApp(pool,{...c,trustProxy:true});
+ for(const path of ['/accounts','/employees','/dashboard','/audit-logs']){
+  const base='/api/v1'+path+'?path='+encodeURIComponent('v1'+path);
+  const ok=await request(hosted).get(base).set('Cookie',actors.administrator.cookie);
+  assert.equal(ok.status,200,path);
+  const bad=await request(hosted).get(base+'&unexpectedFilter=1').set('Cookie',actors.administrator.cookie);
+  assert.equal(bad.status,422,path+' rejects unknown filters');
+ }
+ const invalid=await request(hosted).get('/api/v1/accounts?path=v1/accounts&page=0').set('Cookie',actors.administrator.cookie);
+ assert.equal(invalid.status,422);
+ assert.equal((await get('administrator','/accounts?path=v1/accounts')).status,422,'local requests stay strict');
+});
 test('all module list routes enforce the four-role access matrix',async()=>{
  const routes:Record<string,string[]>={
   '/customers':['administrator','banking_staff','auditor'],

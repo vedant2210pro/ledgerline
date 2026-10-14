@@ -1,5 +1,6 @@
 import express from 'express';
 import helmet from 'helmet';
+import { parse as parseQuery } from 'node:querystring';
 import type { Pool, RowDataPacket } from 'mysql2/promise';
 import type { AppConfig } from './config.ts';
 import { authRouter, authenticate } from './auth.ts';
@@ -13,7 +14,16 @@ export function createApp(pool: Pool, c: AppConfig) {
   const app = express();
   app.disable('x-powered-by');
   // Vercel overwrites forwarding headers; local/Vite traffic never trusts client-supplied XFF.
-  if (c.trustProxy) app.set('trust proxy', 1);
+  if (c.trustProxy) {
+    app.set('trust proxy', 1);
+    // Vercel's /api/:path* rewrite can forward its capture as query metadata.
+    // No application filter uses this reserved key; keep all other keys for strict validation.
+    app.set('query parser', (raw: string) => {
+      const query = parseQuery(raw);
+      delete query.path;
+      return query;
+    });
+  }
   app.use(helmet());
   app.use(requestId);
   app.use((req, res, next) => {

@@ -70,3 +70,7 @@ In a deployed preview, check dashboard permission isolation, all four report fil
 The root build now runs build:server before the client build. esbuild bundles server/src/runtime.ts and the shared TypeScript workspace into server/dist/runtime.mjs; installed third-party packages remain external for Vercel dependency tracing. api/index.js exports the compiled app. The function includeFiles pattern retains both server/dist and the CA certificate. Do not restore the old api/index.ts source import: the deployed transpiled entry previously referenced an absent /var/task/server/src/runtime.ts.
 
 Local verification loaded the actual JavaScript API entry with production configuration: liveness and database readiness returned 200 JSON, and an unauthenticated session request returned 401 JSON. This does not replace a hosted deployment check. Push the source/build configuration changes and redeploy; generated server/dist is ignored and recreated during npm run build.
+
+## Rewrite query metadata
+
+Vercel mode reserves the path query key for the /api/:path* rewrite and removes that key in the Express query parser before strict application filter validation. Other unknown keys, duplicate filter values and invalid pagination/dates remain subject to validation; local mode retains the ordinary strict parser. A real-MySQL regression reproduces the 422 response with injected path metadata and verifies accounts, employees, dashboard and audit routes after normalization. Hosted acceptance must be repeated after deployment.
