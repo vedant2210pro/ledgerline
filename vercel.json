@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/index.ts": {
-      "includeFiles": "certs/aiven-ca.pem"
+    "api/index.js": {
+      "includeFiles": "{certs/aiven-ca.pem,server/dist/**}"
     }
   },
   "framework": "vite",

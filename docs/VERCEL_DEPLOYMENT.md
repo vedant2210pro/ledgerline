@@ -64,3 +64,9 @@ The existing Vercel adapter serves these new routes without extra functions, per
 Apply migration 013 before enabling the new user routes, plus the reviewed grants in server/scripts/admin-grants.ts. Hosted MySQL must support connection-scoped GET_LOCK/RELEASE_LOCK on the same writer; these serialize administrator changes. User/role table privileges are trusted server capabilities, with API permissions enforced for every request. Passwords are never sent to the browser after creation/reset.
 
 In a deployed preview, check dashboard permission isolation, all four report filters, CSV export permissions, user creation/session revocation, concurrent administrator changes, audit browsing and reconciliation. Verify direct navigation to /app/reports and /app/users. The existing adapter and frontend rewrites cover these routes. No new Vercel functions are required.
+
+## Compiled backend packaging
+
+The root build now runs build:server before the client build. esbuild bundles server/src/runtime.ts and the shared TypeScript workspace into server/dist/runtime.mjs; installed third-party packages remain external for Vercel dependency tracing. api/index.js exports the compiled app. The function includeFiles pattern retains both server/dist and the CA certificate. Do not restore the old api/index.ts source import: the deployed transpiled entry previously referenced an absent /var/task/server/src/runtime.ts.
+
+Local verification loaded the actual JavaScript API entry with production configuration: liveness and database readiness returned 200 JSON, and an unauthenticated session request returned 401 JSON. This does not replace a hosted deployment check. Push the source/build configuration changes and redeploy; generated server/dist is ignored and recreated during npm run build.

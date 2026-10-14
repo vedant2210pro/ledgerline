@@ -61,7 +61,7 @@ Account balances, owners, opening dates and account types cannot be rewritten th
 
 ## Vercel
 
-The root `vercel.json` builds `client/dist` and routes `/api/*` to the Express adapter in `api/index.ts`. Keep the Vercel Root Directory at the repository root. Server-only environment variables and a reachable, separately hosted MySQL database are still required. **No cloud deployment has been performed.** See [Vercel instructions](docs/VERCEL_DEPLOYMENT.md).
+The root `vercel.json` builds `client/dist` and routes `/api/*` to the Express adapter in `api/index.js`. Keep the Vercel Root Directory at the repository root. Server-only environment variables and a reachable, separately hosted MySQL database are still required. **No cloud deployment has been performed.** See [Vercel instructions](docs/VERCEL_DEPLOYMENT.md).
 
 ## Main files
 
@@ -70,6 +70,6 @@ The root `vercel.json` builds `client/dist` and routes `/api/*` to the Express a
 - `server/src`: Express setup, configuration, pooled connections, authentication, permissions and record routes.
 - `server/scripts`: administrative setup and bounded expired-auth metadata cleanup.
 - `database`: immutable migration tracks, preserved legacy importer and real database tests.
-- `api/index.ts`: Vercel default handler; `scripts/dev.mjs`: combined local startup.
+- `api/index.js`: Vercel default handler; `scripts/dev.mjs`: combined local startup.
 
 Read [project status](docs/PROJECT_STATUS.md), [API contracts](docs/API_DOCUMENTATION.md), [security boundaries](docs/SECURITY.md) and [phase verification](docs/PHASE_10_VERIFICATION.md).
