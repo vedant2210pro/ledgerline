@@ -1,0 +1,48 @@
+{
+  "name": "ledgerline",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "database",
+    "shared",
+    "server"
+  ],
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run typecheck && npm run build --workspace client",
+    "preview": "npm run preview --workspace client",
+    "typecheck": "npm run typecheck --workspaces",
+    "lint": "eslint client/src client/vite.config.ts database server shared api scripts",
+    "format": "prettier --write client/src database",
+    "db:check": "npm run check --workspace database",
+    "db:init": "npm run init --workspace database",
+    "db:migrate": "npm run migrate --workspace database",
+    "db:seed": "npm run seed --workspace database",
+    "db:verify": "npm run verify --workspace database",
+    "db:test": "npm run test --workspace database",
+    "db:inspect-legacy": "node database/inspect-legacy.ts",
+    "db:upgrade:rehearse": "node database/upgrade/cli.ts rehearse",
+    "db:upgrade:apply": "node database/upgrade/cli.ts apply",
+    "db:upgrade:verify": "node database/upgrade/cli.ts verify",
+    "dev:client": "npm run dev --workspace client",
+    "dev:server": "npm run dev --workspace server",
+    "api:test": "npm run test --workspace server",
+    "app:setup": "node server/scripts/setup.ts",
+    "ui:test": "npm run test --workspace client",
+    "auth:cleanup": "node server/scripts/auth-cleanup.ts",
+    "db:verify:financial": "node database/verify-financial.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.46.0"
+  }
+}

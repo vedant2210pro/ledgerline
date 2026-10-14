@@ -1,0 +1,87 @@
+{
+  "schema": "banking_payroll_db",
+  "inspection": "Read-only inventory; no individual records or credentials exported",
+  "counts": {
+    "customers": "10",
+    "accounts": "10",
+    "employees": "10",
+    "payroll": "11",
+    "branches": "10",
+    "transactions": "10",
+    "customers_missing_required_fields": "0",
+    "employees_needing_review": "0",
+    "branches_missing_required_fields": "0",
+    "invalid_balances": "0",
+    "unmapped_account_types": "0",
+    "invalid_transaction_amounts": "0",
+    "transaction_types_needing_mapping": "2",
+    "payroll_values_needing_review": "0",
+    "duplicate_payroll_period_groups": "0",
+    "orphan_accounts": "0",
+    "orphan_transactions": "0",
+    "orphan_payroll": "0",
+    "accounts_not_reconciled_to_available_history": "10"
+  },
+  "accountTypes": [
+    {
+      "type": "Savings",
+      "records": "7"
+    },
+    {
+      "type": "Current",
+      "records": "3"
+    }
+  ],
+  "transactionTypes": [
+    {
+      "type": "Deposit",
+      "records": "4"
+    },
+    {
+      "type": "Withdrawal",
+      "records": "4"
+    },
+    {
+      "type": "Transfer",
+      "records": "2"
+    }
+  ],
+  "views": [
+    {
+      "TABLE_NAME": "account_transaction_view",
+      "VIEW_DEFINITION": "select `a`.`account_id` AS `account_id`,`a`.`account_type` AS `account_type`,`a`.`balance` AS `balance`,`bt`.`transaction_id` AS `transaction_id`,`bt`.`transaction_type` AS `transaction_type`,`bt`.`amount` AS `amount`,`bt`.`transaction_date` AS `transaction_date`,`bt`.`description` AS `description` from (`banking_payroll_db`.`account` `a` join `banking_payroll_db`.`bank_transaction` `bt` on((`a`.`account_id` = `bt`.`account_id`)))"
+    },
+    {
+      "TABLE_NAME": "branch_transaction_view",
+      "VIEW_DEFINITION": "select `b`.`branch_id` AS `branch_id`,`b`.`name` AS `branch_name`,`b`.`address` AS `address`,`bt`.`transaction_id` AS `transaction_id`,`bt`.`transaction_type` AS `transaction_type`,`bt`.`amount` AS `amount`,`bt`.`transaction_date` AS `transaction_date` from (`banking_payroll_db`.`branch` `b` join `banking_payroll_db`.`bank_transaction` `bt` on((`b`.`branch_id` = `bt`.`branch_id`)))"
+    },
+    {
+      "TABLE_NAME": "customer_account_view",
+      "VIEW_DEFINITION": "select `c`.`customer_id` AS `customer_id`,`c`.`name` AS `customer_name`,`c`.`email` AS `email`,`a`.`account_id` AS `account_id`,`a`.`account_type` AS `account_type`,`a`.`balance` AS `balance`,`a`.`open_date` AS `open_date` from (`banking_payroll_db`.`customer` `c` join `banking_payroll_db`.`account` `a` on((`c`.`customer_id` = `a`.`customer_id`)))"
+    },
+    {
+      "TABLE_NAME": "employee_payroll_view",
+      "VIEW_DEFINITION": "select `e`.`employee_id` AS `employee_id`,`e`.`name` AS `employee_name`,`e`.`department` AS `department`,`p`.`salary_amount` AS `salary_amount`,`p`.`bonus` AS `bonus`,`p`.`deductions` AS `deductions`,`p`.`pay_date` AS `pay_date` from (`banking_payroll_db`.`employee` `e` join `banking_payroll_db`.`payroll` `p` on((`e`.`employee_id` = `p`.`employee_id`)))"
+    },
+    {
+      "TABLE_NAME": "high_balance_account_view",
+      "VIEW_DEFINITION": "select `banking_payroll_db`.`account`.`account_id` AS `account_id`,`banking_payroll_db`.`account`.`customer_id` AS `customer_id`,`banking_payroll_db`.`account`.`account_type` AS `account_type`,`banking_payroll_db`.`account`.`balance` AS `balance`,`banking_payroll_db`.`account`.`open_date` AS `open_date` from `banking_payroll_db`.`account` where (`banking_payroll_db`.`account`.`balance` > 50000)"
+    }
+  ],
+  "triggers": [
+    {
+      "TRIGGER_NAME": "Check_Account_Balance",
+      "EVENT_OBJECT_TABLE": "account",
+      "ACTION_TIMING": "BEFORE",
+      "EVENT_MANIPULATION": "INSERT",
+      "ACTION_STATEMENT": "BEGIN\n    IF NEW.balance < 0 THEN\n        SIGNAL SQLSTATE '45000'\n        SET MESSAGE_TEXT = 'Account balance cannot be negative';\n    END IF;\nEND"
+    },
+    {
+      "TRIGGER_NAME": "Calculate_Payroll_Deduction",
+      "EVENT_OBJECT_TABLE": "payroll",
+      "ACTION_TIMING": "BEFORE",
+      "EVENT_MANIPULATION": "INSERT",
+      "ACTION_STATEMENT": "BEGIN\n    SET NEW.deductions = NEW.salary_amount * 0.10;\nEND"
+    }
+  ]
+}

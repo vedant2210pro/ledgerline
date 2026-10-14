@@ -1,0 +1,13 @@
+{
+  "name": "@ledgerline/shared",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.1.0"
+  }
+}

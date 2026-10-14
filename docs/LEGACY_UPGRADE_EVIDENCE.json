@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-11T12:05:44.691Z",
+  "applied": true,
+  "sourceSchema": "banking_payroll_db",
+  "rehearsalSchema": "banking_payroll_rehearsal_20261011120536420",
+  "backupPath": "D:\\DBMS\\database\\backups\\20261011120536420\\legacy.sql",
+  "backupSha256": "ac255ee187f466cf9483aadcda9a26156e1697736d7dcbb1a5d478e511a23158",
+  "sourceDigest": "ddf2ae493a6f1dcaff3854ea41e796f45aab56ac634da80dfde659283d5c77a0",
+  "counts": {
+    "customer": 10,
+    "employee": 10,
+    "branch": 10,
+    "account": 10,
+    "payroll": 11,
+    "bank_transaction": 10
+  },
+  "views": 5,
+  "originalTriggers": 2,
+  "tests": {
+    "faultInjectionRollbacks": 5,
+    "idempotentImport": true,
+    "frozenPostingBlocked": true,
+    "activationRequiresReview": true,
+    "historicalPayrollInsertAndUpdateBlocked": true,
+    "newEmployeeFieldsRequired": true,
+    "schemaConvergence": true,
+    "permissionConvergence": true,
+    "upgradeChecksumGuard": true,
+    "incompleteUpgradeGuard": true
+  },
+  "verification": {
+    "sourceRows": 61,
+    "mappedCoreRows": 40,
+    "frozenAccounts": 10,
+    "historicalPayrollPeriods": 11,
+    "unresolvedTransfers": 2,
+    "inventoryDigest": "ddf2ae493a6f1dcaff3854ea41e796f45aab56ac634da80dfde659283d5c77a0",
+    "status": "verified"
+  }
+}

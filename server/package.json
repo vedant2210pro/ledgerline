@@ -1,0 +1,24 @@
+{
+  "name": "@ledgerline/server",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/local.ts",
+    "start": "node src/local.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --test-concurrency=1 tests/*.test.ts"
+  },
+  "dependencies": {
+    "@ledgerline/shared": "*",
+    "@vercel/functions": "^3.9.11",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "mysql2": "^3.15.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/supertest": "^6.0.0",
+    "supertest": "^7.1.0"
+  }
+}
