@@ -19,14 +19,14 @@ All identifiers are unsigned BIGINT except small lookup keys. All tables use Inn
 
 | Table | Purpose and constraints |
 | --- | --- |
-| users | Login identities; invited/active/disabled; active identities require a hash, but hashing/auth are not yet implemented |
+| users | Login identities; invited/active/disabled; active identities require a password hash; scrypt authentication and opaque sessions are implemented |
 | roles / permissions | Four initial role names and 27 explicit action grants |
 | user_roles / role_permissions | Composite-key role assignments and permission mappings |
 | operation_requests | Actor + operation + case-sensitive idempotency key is unique; payload hash and completion metadata |
 | transfers | Source/destination account links, positive amount, request and reference uniqueness |
 | sessions | Hashed session/CSRF tokens, user link, expiry and revocation constraints; no live login sessions yet |
 | login_attempts | HMAC identity/address buckets and attempt time; authentication enforcement arrives later |
-| audit_logs | Actor/request links and JSON before/after values; not yet automatically populated by business workflows |
+| audit_logs | Actor/request links and JSON before/after values; business mutations commit their audit events atomically |
 | schema_migrations | SHA-256 migration content checksums and running/applied/failed markers |
 | seed_runs | Seed checksum and timestamp for atomic, idempotent fictional initialization |
 

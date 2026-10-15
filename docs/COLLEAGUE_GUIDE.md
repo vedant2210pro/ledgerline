@@ -12,6 +12,7 @@ Users may have multiple roles; permissions combine. There is no separate custome
 | Payroll dashboard and reports, CSV export | Yes | No | Yes | Yes |
 | View customers and accounts | Yes | Yes | No | Yes |
 | Create/update customers and accounts | Yes | Yes | No | No |
+| Confirm imported opening-balance reviews | Yes | No | No | No |
 | View transaction history | Yes | Yes | No | Yes |
 | Deposit, withdraw and transfer | Yes | Yes | No | No |
 | Reverse eligible transactions | Yes | No | No | No |
@@ -52,4 +53,4 @@ The local address `http://127.0.0.1:5173` works only on the computer running the
 
 Use a separate demonstration/test database with fictional records. Show the role-specific dashboard, create a customer and zero-balance account, demonstrate a deposit/transfer and receipt, prepare payroll and sign in as a second authorized reviewer, then display reports and audit history. Show an auditor account reading/exporting without write controls. Do not post demonstration money or payroll into the preserved main database.
 
-The local main database preserves its original 61 rows and opening balances. Its imported accounts are frozen for review, and new activity charts can legitimately be empty. Responsive browser acceptance and hosted deployment verification remain pending.
+The local main database preserves its original 61 rows and opening balances. An administrator can now review an imported opening balance on its account detail page: compare source and reconciliation, add a note and explicitly confirm. This records the review without changing the balance; activation is a separate edit. Banking staff and auditors can inspect the evidence but cannot approve it. New activity charts can legitimately be empty. See [cloud update and review instructions](FINAL_AUDIT_2026_10_15.md); hosted acceptance of this update and responsive browser acceptance remain pending.

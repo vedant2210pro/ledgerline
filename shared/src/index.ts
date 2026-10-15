@@ -1,5 +1,5 @@
 import { z } from 'zod';
-export { ZodError } from 'zod';
+export { ZodError, z } from 'zod';
 export const idSchema = z.string().regex(/^[1-9][0-9]{0,18}$/, 'Choose a valid record.');
 const name = z.string().trim().min(2, 'Enter at least 2 characters.').max(120);
 const email = z.string().trim().toLowerCase().email('Enter a valid email.').max(254);

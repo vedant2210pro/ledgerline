@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import type { RowDataPacket } from 'mysql2/promise';
 import { connect, safeError, rootEnv } from '../../database/config.ts';
 import { grantAdmin } from './admin-grants.ts';
+import { grantOpeningReview } from './opening-review-grants.ts';
 import { grantFinance } from './grants.ts';
 import { upgradeFiles, upgradeSchema } from '../../database/upgrade/schema.ts';
 import { ensureDatabase, migrate } from '../../database/migrate.ts';
@@ -112,6 +113,7 @@ try {
   for (const schema of ['banking_payroll_db', 'banking_payroll_test']) {
     await grantFinance(admin, schema, user);
     await grantAdmin(admin, schema, user);
+    await grantOpeningReview(admin, schema, user);
     for (const [table, grants] of Object.entries(grantSpec))
       await admin.query(`GRANT ${grants.join(',')} ON \`${schema}\`.\`${table}\` TO ?@?`, [
         user,

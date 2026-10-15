@@ -1,4 +1,4 @@
-# API contracts — Phases 4 and 5
+# API contracts
 
 Prefix: `/api/v1`. JSON bodies, opaque HttpOnly session cookies, exact configured Origin for mutations, and `X-CSRF-Token` from login or `/auth/me`. Money and IDs are strings; row_version is an integer. Responses set Cache-Control: no-store and X-Request-ID.
 
@@ -12,7 +12,7 @@ Prefix: `/api/v1`. JSON bodies, opaque HttpOnly session cookies, exact configure
 | GET /auth/me | Current user ID/name/email/roles/permissions and CSRF token; expired/revoked/disabled → 401 |
 | POST /auth/logout | JSON `{}`, trusted origin and CSRF; durably revokes session, clears cookie; 204 |
 
-No public registration, password-reset email, employee management or role-administration endpoint exists yet. Initial administrator provisioning is a local administrative command.
+No public registration or password-reset email exists. Initial administrator provisioning is a local administrative command; authenticated user, fixed-role and employee management endpoints are documented below.
 
 ## Customer, account and branch resources
 
@@ -34,7 +34,9 @@ Branch POST fields: branch_code, name, address, phone, branch_status (`active`/`
 
 Account POST fields: customer_id, employee_id, account_type (`savings`/`current`/`salary`), open_date (valid MySQL date, not future). Number is generated server-side; balance defaults to exact 0.00 INR. Customer must be active; officer must be active or an explicitly labeled imported legacy_incomplete employee. No employment facts are invented.
 
-Account PATCH accepts only employee_id, account_status (`active`/`frozen`/`closed`), row_version. Funded closure is rejected. Closed records cannot change or reopen. Pending imported opening snapshots prohibit leaving frozen status. No balance/owner/type/date rewrite is accepted. Opening-balance review and financial processing APIs are not implemented.
+Account PATCH accepts only employee_id, account_status (`active`/`frozen`/`closed`), row_version. Funded closure is rejected. Closed records cannot change or reopen. Pending imported opening snapshots prohibit leaving frozen status. No balance/owner/type/date rewrite is accepted. Officer/customer eligibility is checked when assigning a different officer or activating an account; an unchanged officer on leave does not prevent freezing it.
+
+GET `/accounts/:id/opening-review` requires accounts.view and returns the source/opening/current balances, ledger movement, discrepancy, source fingerprint check, row_version and review metadata. POST to the same path requires an active administrator, accounts.update, Origin and CSRF. Body: `{row_version, opening_balance, review_note, confirmed:true}`; note is 10–1000 trimmed characters and money is a string. The account must be frozen with a pending snapshot, verified unchanged source and zero discrepancy. The review locks the account/snapshot, updates only review metadata and row_version, and commits an audit event atomically. It does not change the balance or activate the account. Stale, duplicate or inconsistent reviews return 409; accounts without imported snapshots return 404.
 
 Related endpoints:
 
@@ -48,7 +50,7 @@ Related endpoints:
 
 PATCH locks the target row, checks row_version and related records, changes allowed columns and inserts actor-attributed before/after audit JSON in one transaction. Two concurrent writes using one version result in one success and one stale-write rejection. An audit failure rolls back the mutation. Deadlocks/timeouts produce a retryable 409; the API does not silently replay writes.
 
-POST creation is not a general idempotent financial-operation API. If a connection fails after submission, inspect the record list before creating another account. Financial idempotency belongs to the pending routines and transaction phases.
+POST record creation is not idempotent. If a connection fails after submission, inspect the record list before creating another account. Financial operations use the idempotency contracts below. After an uncertain opening-review result, reload its metadata before retrying.
 
 ## Phases 6 and 7: financial and payroll routes
 

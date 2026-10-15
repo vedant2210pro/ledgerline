@@ -76,6 +76,7 @@ export default function PayrollPage() {
     const c = new AbortController();
     setLoading(true);
     setError('');
+    if (!detail) setData(null);
     async function load() {
       if (isNew) {
         setRecord(null);
@@ -92,10 +93,6 @@ export default function PayrollPage() {
           bonus: String(r.bonus),
           deductions: String(r.deductions),
         });
-        const a = await api<typeof audit>('/payroll/' + id + '/audit?page=' + auditPage, {
-          signal: c.signal,
-        });
-        setAudit(a);
       } else {
         setData(await api<PageResult>('/payroll?' + params, { signal: c.signal }));
         if (can('reports.payroll.view'))
@@ -114,7 +111,18 @@ export default function PayrollPage() {
     return () => c.abort();
     // Permission checks depend on the authenticated user snapshot.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isNew, detail, allowed, params, revision, user, auditPage, summaryPage]);
+  }, [id, isNew, detail, allowed, params, revision, user, summaryPage]);
+  useEffect(() => {
+    if (!allowed || !detail || isNew) return;
+    const c = new AbortController();
+    setAudit(null);
+    void api<typeof audit>('/payroll/' + id + '/audit?page=' + auditPage, { signal: c.signal })
+      .then(setAudit)
+      .catch((e) => {
+        if (!c.signal.aborted) setError(e.message);
+      });
+    return () => c.abort();
+  }, [allowed, detail, isNew, id, auditPage, revision]);
   const editable =
     (isNew
       ? can('payroll.create')
@@ -566,7 +574,9 @@ export default function PayrollPage() {
                 </tbody>
               </table>
             </div>
-            {!data?.items.length && <p className="records-empty">No payroll records found.</p>}
+            {data && !data.items.length && (
+              <p className="records-empty">No payroll records found.</p>
+            )}
             <Pager
               page={page}
               total={data?.total || 0}

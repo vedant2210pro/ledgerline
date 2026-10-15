@@ -8,6 +8,7 @@ import { analyticsRouter } from './analytics.ts';
 import { adminRouter } from './admin.ts';
 import { financeRouter } from './finance.ts';
 import { recordsRouter } from './records.ts';
+import { openingReviewRouter } from './opening-review.ts';
 import { ApiError, errors, requestId } from './errors.ts';
 import { read } from './db.ts';
 export function createApp(pool: Pool, c: AppConfig) {
@@ -82,6 +83,7 @@ export function createApp(pool: Pool, c: AppConfig) {
   app.use(
     '/api/v1',
     authenticate(pool, c),
+    openingReviewRouter(pool),
     recordsRouter(pool),
     financeRouter(pool),
     analyticsRouter(pool),

@@ -360,7 +360,8 @@ export function recordsRouter(pool: Pool) {
               'RECONCILIATION_REQUIRED',
               'The imported opening balance needs review before changing this status.',
             );
-          await relationships(db, String(current.customer_id), a.employee_id);
+          if (String(current.employee_id) !== a.employee_id || a.account_status === 'active')
+            await relationships(db, String(current.customer_id), a.employee_id);
         }
         const entries = Object.entries(data).filter(([key]) => key !== 'row_version');
         await db.execute(

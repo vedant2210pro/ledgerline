@@ -1,10 +1,10 @@
 # Project status
 
-Updated: 13 October 2026 (Asia/Kolkata).
+Updated: 15 October 2026 (Asia/Kolkata).
 
 ## Current checkpoint
 
-**Phases 3–9 are implemented and verified locally.** Phases 8 and 9 add the live dashboard, reports/exports, user administration, audit browsing and read-only settings. Phase 10 automated integration/QA passed with expanded role coverage and a readiness fix; manual responsive/browser acceptance remains outstanding. The original Phase 11 covers documentation and delivery. Hosted deployment additionally needs a hosted database and Vercel configuration.
+**Phases 3–9 are implemented and verified locally.** The user has deployed to Vercel with Aiven MySQL. The latest local update adds administrator opening-balance review and fixes payroll edit retention, misleading loading errors and account-freezing eligibility. Apply the cloud grants before deploying this update; see [final audit and release steps](FINAL_AUDIT_2026_10_15.md). Manual responsive/browser acceptance remains outstanding.
 
 ## Working features
 
@@ -32,11 +32,11 @@ Updated: 13 October 2026 (Asia/Kolkata).
 
 ## Validation
 
-**94 automated tests pass:** 24 MySQL schema tests, 48 API tests (47 real-MySQL and one simulated readiness failure), and 22 React/jsdom component tests. Coverage includes concurrent duplicate deposits, competing withdrawals, opposite-direction transfers, whole-transfer reversals, audit-failure rollback, runtime privilege restrictions, independent payroll review, duplicate periods, revoked reviewers, inactive employees and persistent UI retry keys.
+**114 automated tests pass:** 24 MySQL schema tests, 55 API tests, and 35 React/jsdom component tests. Coverage includes concurrent financial operations, reversals, independent payroll approval, runtime privileges, opening-review authorization/concurrency/rollback, source verification, retained payroll edits and actionable loading errors.
 
 Lint, TypeScript checks and the production build pass. Authenticated main-database readiness, dashboard, all four reports, users, roles, audit logs, system information, login and logout passed without changing business records. Built JS/CSS contained none of the configured credentials or authentication secret. EXPLAIN evidence is available through `db:verify:financial`; small datasets use full scans for several aggregates, so no production performance benchmark is claimed.
 
-Interactive visual/responsive browser review remains outstanding: the browser tool previously rejected local-page access. Component tests cover behavior, not screenshot quality. No hosted Vercel/TLS deployment or production load/security certification is claimed. The build retains two harmless upstream Zod comment-annotation warnings.
+Interactive visual/responsive browser review remains outstanding: the browser tool previously rejected local-page access. Component tests cover behavior, not screenshot quality. The latest fixes have not been verified on the hosted deployment, and no production load/security certification is claimed. The build retains two harmless upstream Zod comment-annotation warnings.
 
 ## Run locally
 
@@ -46,7 +46,7 @@ npm run dev
 
 Open `http://127.0.0.1:5173/login`. Your administrator credentials remain in the ignored `.env.admin.json`; `.env` holds separate administrative and restricted runtime database credentials. Never upload either file. Verification servers are stopped.
 
-Imported accounts still require an opening-balance review before activation. Imported employees require confirmed designation/joining date before becoming eligible for payroll. Payroll approval requires a second active authorized person; this phase does not invent another administrator identity. Use the Users screen to provision a real independent reviewer.
+Imported accounts require an opening-balance review before activation. Administrators can now perform that review on the account detail page after checking the source and reconciliation; activation is a separate action. Imported employees require confirmed designation/joining date before payroll. Payroll approval requires a second active authorized person; use the Users screen to provision a real independent reviewer.
 
 ## Verification commands
 

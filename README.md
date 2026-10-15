@@ -35,7 +35,7 @@ npm run db:upgrade:verify
 npm run db:verify:financial
 ```
 
-Executed results: 24 schema tests, 48 API tests (47 real-MySQL and one simulated readiness failure) and 22 React/jsdom component tests passed (94 total). Build, types, lint, main/test balance reconciliation, legacy preservation and authenticated main-database reads passed. Interactive visual/responsive review remains outstanding because the browser tool blocked local-page access. See [current verification](docs/PHASE_10_VERIFICATION.md).
+Executed results: 24 schema tests, 55 API tests and 35 React/jsdom component tests passed (114 total). Interactive visual/responsive review remains outstanding because the browser tool blocked local-page access. See the [15 October verification and cloud update steps](docs/FINAL_AUDIT_2026_10_15.md).
 
 The upgrade preservation verifier describes the initial cutover state: legitimate later edits to imported profiles/statuses will require ongoing reconciliation rather than expecting that exact-state check to keep passing.
 
@@ -55,13 +55,13 @@ See [colleague roles and every feature](docs/COLLEAGUE_GUIDE.md) for a shareable
 - Create records, view details and save edits with stale-update detection.
 - Open accounts at zero balance with a selected customer/officer; freeze or close permitted accounts.
 - Deactivate customers only after their accounts are closed; deactivate/reactivate branches.
-- Inspect imported accounts while their opening balances remain frozen for review.
+- Inspect imported source balances and reconciliation; administrators can record an audited opening-balance review, then separately activate eligible accounts.
 
 Account balances, owners, opening dates and account types cannot be rewritten through update requests. Closed accounts cannot reopen. No record-deletion endpoint is provided. Successful mutations and their audit entries commit together. Payroll needs a second active authorized reviewer; only your supplied administrator is provisioned on this machine. Imported employees require confirmed employment details before payroll.
 
 ## Vercel
 
-The root `vercel.json` builds `client/dist` and routes `/api/*` to the Express adapter in `api/index.js`. Keep the Vercel Root Directory at the repository root. Server-only environment variables and a reachable, separately hosted MySQL database are still required. **No cloud deployment has been performed.** See [Vercel instructions](docs/VERCEL_DEPLOYMENT.md).
+The root `vercel.json` builds `client/dist` and routes `/api/*` to the Express adapter in `api/index.js`. Keep the Vercel Root Directory at the repository root. The user has deployed the application at https://ledgerline-lime.vercel.app with hosted MySQL. The latest local fixes still need the [cloud permission update and deployment](docs/FINAL_AUDIT_2026_10_15.md). See [Vercel instructions](docs/VERCEL_DEPLOYMENT.md) for a fresh deployment.
 
 ## Main files
 

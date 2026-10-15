@@ -19,6 +19,7 @@ import {
   type PageResult,
 } from '@ledgerline/shared';
 import { api, RequestError } from '../services/api';
+import OpeningBalanceReview from '../components/finance/OpeningBalanceReview';
 import { useAuth } from '../auth/context';
 import { RecordStatus } from './RecordsPage';
 import { moduleTitles } from './recordsConfig';
@@ -396,7 +397,16 @@ export default function RecordPage({ module }: { module: Module }) {
                         aria-invalid={!!errors[f.key]}
                       >
                         {f.options.map((o) => (
-                          <option key={o}>{o}</option>
+                          <option
+                            key={o}
+                            disabled={
+                              f.key === 'account_status' &&
+                              record?.reconciliation_state === 'pending' &&
+                              o !== 'frozen'
+                            }
+                          >
+                            {o}
+                          </option>
                         ))}
                       </select>
                     ) : f.key === 'address' ? (
@@ -508,6 +518,13 @@ export default function RecordPage({ module }: { module: Module }) {
             )}
           </aside>
         </div>
+      )}
+      {module === 'accounts' && record?.reconciliation_state && id && (
+        <OpeningBalanceReview
+          key={`${id}:${record.row_version}`}
+          accountId={id}
+          onReviewed={() => setRevision((v) => v + 1)}
+        />
       )}
       {related && (
         <section className="records-panel related-records">

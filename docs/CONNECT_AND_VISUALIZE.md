@@ -73,4 +73,4 @@ Set Vercel's root directory to the repository root, use Node 24.x, `npm ci`, `np
 
 Use separate preview and production credentials and schemas. Vercel environment changes apply to subsequent deployments; redeploy after updating them. See [Vercel environment variables](https://vercel.com/docs/environment-variables) and the project's [full deployment guide](VERCEL_DEPLOYMENT.md).
 
-No hosted deployment has been performed. Browser layout review and hosted TLS, cookies, database privileges and connection-capacity checks remain before production use.
+The user has deployed at https://ledgerline-lime.vercel.app. The latest opening-review update still needs the [cloud permission script and code deployment](FINAL_AUDIT_2026_10_15.md). After deployment, administrators can open an imported account, scroll to Opening balance review, compare source and reconciliation, add a note and confirm. Activation is a separate saved status change. Browser layout review and hosted acceptance of this update remain outstanding.

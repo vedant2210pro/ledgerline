@@ -1,4 +1,4 @@
-# Security boundaries — Phases 4 and 5
+# Security boundaries
 
 This is an academic implementation, not a production banking certification.
 
@@ -14,7 +14,7 @@ CSRF tokens are derived with HMAC from the private AUTH_SECRET and raw session t
 
 Identity and address buckets use HMAC identifiers and transactional counters in MySQL. A fixed 15-minute window allows five identity attempts and thirty address attempts, including successful attempts. Parallel requests serialize counter updates; no in-memory limiter is authoritative. The Vercel runtime trusts one known proxy hop; local development ignores forwarded addresses. KDF concurrency limits remain instance-local supplemental protection.
 
-Logging exposes request IDs and safe error/driver codes, not SQL, bodies or credentials. Audits store authorized actors and before/after record values transactionally; salary/PII-bearing audit data is not exposed through an API in these phases. Auth attempt rows contain HMAC identifiers only.
+Logging exposes request IDs and safe error/driver codes, not SQL, bodies or credentials. Audits store authorized actors and before/after record values transactionally; audit APIs enforce the relevant audit/payroll permissions because records can contain personal or salary data. Auth attempt rows contain HMAC identifiers only.
 
 Run `npm run auth:cleanup` administratively to delete at most 5000 expired records per table per invocation: attempts older than seven days, expired throttle windows older than one day, and sessions expired for a day. Audit history is retained. Schedule maintenance operationally before production; no scheduler was installed here.
 
@@ -22,13 +22,17 @@ Run `npm run auth:cleanup` administratively to delete at most 5000 expired recor
 
 `app:setup` generates a dedicated local runtime account, distinct from MYSQL_USER/MYSQL_PASSWORD used for administration. It has reads on necessary modern identity/record tables, a restricted employee lookup projection, permitted INSERT/UPDATE columns for entity/session work, auth metadata writes and audit INSERT only.
 
-In particular it cannot UPDATE balances, INSERT a supplied balance, change account ownership/type/open dates, DELETE customer/account/branch records, alter opening snapshots, modify roles/users/passwords, access payroll or mutate legacy source tables. These restrictions were exercised against MySQL, not only mocked. Grant declarations are in server/scripts/setup.ts. Existing administrator/root grants were not weakened or changed.
+It cannot directly UPDATE balances, INSERT a supplied balance, change account ownership/type/open dates, DELETE customer/account/branch records, rewrite snapshot opening balances or mutate legacy source tables. Later feature grants permit bounded user/payroll writes and opening-review metadata updates as described below. Restrictions are exercised against MySQL. Grant declarations are in server/scripts/setup.ts and its imported grant helpers.
 
-Local development grants cover the application and isolated test schemas. Cloud preview/production must have separate accounts scoped to one environment each. Legacy reporting access is not granted yet; future reporting requires an explicit SELECT-only grant. Neither frontend builds nor API cold starts run migrations.
+Local development grants cover the application and isolated test schemas. Cloud preview/production must have separate accounts scoped to one environment each. Opening review adds SELECT on the preserved account source and import metadata; it grants no legacy writes. Neither frontend builds nor API cold starts run migrations.
 
 ## Scope limits
 
-No public registration, MFA, account-recovery email or self-service password change. Administrator-managed password reset and user provisioning are available. Administrative compromise is outside the API privilege boundary: database owners can edit tables. Imported incomplete employees remain explicitly unknown; imported frozen accounts require a future controlled review workflow. No cloud security/load test or interactive browser QA was completed.
+No public registration, MFA, account-recovery email or self-service password change. Administrator-managed password reset and user provisioning are available. Administrative compromise is outside the API privilege boundary: database owners can edit tables. Imported incomplete employees remain explicitly unknown; imported frozen accounts require the controlled opening-review workflow. No cloud security/load test or interactive browser QA was completed.
+
+## Opening-balance review
+
+Only an active administrator can confirm a review. The server rechecks authority, source SHA-256, verified import status, exact opening balance, frozen status, pending review and zero ledger discrepancy inside the transaction. Account/snapshot locks and row_version prevent conflicting reviews. Review metadata and its audit event commit together; an audit failure rolls everything back. Runtime grants permit updating only reconciliation_state, reviewed_by, reviewed_at and review_note on snapshots. Account activation remains a separate checked action; no automatic approvals or balance adjustments are performed.
 
 References: [Express security guidance](https://expressjs.com/en/advanced/best-practice-security/), [Vercel pool lifecycle guidance](https://vercel.com/kb/guide/efficiently-manage-database-connection-pools-with-fluid-compute). The implementation uses database-backed opaque sessions rather than Express's default in-memory session storage.
 

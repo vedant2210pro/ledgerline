@@ -130,6 +130,8 @@ No deployment has been performed yet. You can demonstrate locally for the lab be
 
 **Roles:** Sign in as an auditor to show read/export access without mutation controls. Explain that the API also rejects unauthorized requests.
 
-**Verification and limits:** “94 automated tests passed at the latest checkpoint, with schema, API and component coverage. Original data was preserved and balances reconcile. Manual responsive acceptance and hosted deployment checks remain outstanding.”
+**Opening-balance review:** “Imported accounts start frozen. An administrator compares the source and opening balances, verifies that opening balance plus ledger movements equals current balance, and records a review note. The application verifies the original source fingerprint and writes the review and audit event atomically. Review never changes money; activating the account is a separate action.”
+
+**Verification and limits:** “114 automated tests passed at the 15 October checkpoint, with schema, API and component coverage. Original data was preserved and balances reconcile. The application has been deployed by the owner; the latest fixes still need the documented cloud permission update and deployment. Manual responsive acceptance and hosted acceptance of those fixes remain outstanding.”
 
 Be ready to answer: Why DECIMAL? Why foreign keys? What happens if a transfer fails halfway? What if two withdrawals happen together? Why cannot payroll be self-approved? Why does the database have both singular legacy tables and modern plural tables? The answers above describe the implemented behavior.

@@ -41,6 +41,16 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
     } catch {
       throw new Error('The service returned an unexpected response. Please try again.');
     }
+    if (
+      (!options.method || options.method === 'GET') &&
+      data.error?.code === 'VALIDATION_ERROR' &&
+      data.error.fields
+    ) {
+      const details = Object.entries(data.error.fields)
+        .map(([field, message]) => field + ': ' + message)
+        .join(' ');
+      data.error.message = 'Unable to load these filters. ' + details;
+    }
     if (response.status === 401 && path !== '/auth/login')
       window.dispatchEvent(new Event('session-expired'));
     throw new RequestError(

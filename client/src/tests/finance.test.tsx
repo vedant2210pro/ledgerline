@@ -215,3 +215,43 @@ it('imported employees require explicit missing employment details', async () =>
   expect((screen.getByLabelText('Designation') as HTMLInputElement).value).toBe('');
   expect((screen.getByLabelText('Joining date') as HTMLInputElement).value).toBe('');
 });
+
+it('paging payroll audit history preserves unsaved draft edits', async () => {
+  mocked.mockImplementation(async (path) =>
+    path.includes('/audit?')
+      ? { items: [], total: 20 }
+      : path.includes('/lookups/')
+        ? { items: [] }
+        : {
+            id: '12',
+            employee_id: '1',
+            employee_name: 'Test employee',
+            employee_code: 'TEST',
+            payroll_period: '2026-10-01',
+            salary_amount: '10.00',
+            bonus: '1.00',
+            deductions: '0.00',
+            net_salary: '11.00',
+            payroll_status: 'draft',
+            created_by: '1',
+            row_version: 1,
+          },
+  );
+  renderPage('payroll', '12');
+  const input = await screen.findByLabelText('Base salary · INR');
+  const u = userEvent.setup();
+  await u.clear(input);
+  await u.type(input, '25.00');
+  await u.click(await screen.findByRole('button', { name: 'Next' }));
+  await waitFor(() =>
+    expect(mocked.mock.calls.some(([path]) => path.includes('/audit?page=2'))).toBe(true),
+  );
+  expect((screen.getByLabelText('Base salary · INR') as HTMLInputElement).value).toBe('25.00');
+  expect(mocked.mock.calls.filter(([path]) => path === '/payroll/12')).toHaveLength(1);
+});
+it('failed payroll list loading does not claim there are no records', async () => {
+  mocked.mockRejectedValue(new Error('Database unavailable'));
+  renderPage('payroll');
+  await screen.findByText('Database unavailable');
+  expect(screen.queryByText('No payroll records found.')).toBeNull();
+});
