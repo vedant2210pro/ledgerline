@@ -1,6 +1,7 @@
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomBytes, createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import request from 'supertest';
 import type { Connection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { connect, safeError } from '../../database/config.ts';
@@ -236,4 +237,50 @@ test('existing officer on leave does not block freezing an active account', asyn
   await db.execute("UPDATE employees SET employment_status='active' WHERE employee_id=?", [
     employee,
   ]);
+});
+
+test('Workbench activation preserves balances, audits changes, rolls back failures and is safe to rerun', async () => {
+  const sql = readFileSync(
+    new URL('../../docs/ACTIVATE_FROZEN_ACCOUNTS.sql', import.meta.url),
+    'utf8',
+  );
+  const procedure = sql.split('-- BEGIN PROCEDURE')[1].split('-- END PROCEDURE')[0].trim();
+  const [users] = await db.execute<RowDataPacket[]>('SELECT email FROM users WHERE user_id=?', [
+    actors.administrator.id,
+  ]);
+  const email = users[0].email;
+  const id = fixtures[1];
+  await db.query('DROP PROCEDURE IF EXISTS ledgerline_activate_frozen_20261015');
+  await db.query(procedure);
+  try {
+    await db.execute('UPDATE account SET balance=101 WHERE account_id=?', [id]);
+    await assert.rejects(db.query('CALL ledgerline_activate_frozen_20261015(?,?)', [email, id]));
+    assert.equal((await get('administrator', id)).body.reconciliation_state, 'pending');
+    await db.execute('UPDATE account SET balance=100 WHERE account_id=?', [id]);
+    await db.query(
+      "CREATE TRIGGER fail_bulk_activation BEFORE INSERT ON audit_logs FOR EACH ROW BEGIN IF NEW.action='accounts.activate_bulk' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Injected failure'; END IF; END",
+    );
+    try {
+      await assert.rejects(db.query('CALL ledgerline_activate_frozen_20261015(?,?)', [email, id]));
+    } finally {
+      await db.query('DROP TRIGGER fail_bulk_activation');
+    }
+    const rolledBack = (await get('administrator', id)).body;
+    assert.equal(rolledBack.account_status, 'frozen');
+    assert.equal(rolledBack.reconciliation_state, 'pending');
+    await db.query('CALL ledgerline_activate_frozen_20261015(?,?)', [email, id]);
+    await db.query('CALL ledgerline_activate_frozen_20261015(?,?)', [email, id]);
+    const reviewed = (await get('administrator', id)).body;
+    assert.equal(reviewed.account_status, 'active');
+    assert.equal(reviewed.reconciliation_state, 'reviewed');
+    assert.equal(reviewed.balance, '100.00');
+    assert.equal(reviewed.row_version, 1);
+    const [logs] = await db.execute<RowDataPacket[]>(
+      "SELECT COUNT(*) n FROM audit_logs WHERE entity_id=? AND action='accounts.activate_bulk'",
+      [id],
+    );
+    assert.equal(Number(logs[0].n), 1);
+  } finally {
+    await db.query('DROP PROCEDURE IF EXISTS ledgerline_activate_frozen_20261015');
+  }
 });

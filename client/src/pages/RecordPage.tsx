@@ -344,6 +344,13 @@ export default function RecordPage({ module }: { module: Module }) {
           />
         )}
       </div>
+      {module === 'accounts' && record?.reconciliation_state && id && (
+        <OpeningBalanceReview
+          key={`${id}:${record.row_version}`}
+          accountId={id}
+          onReviewed={() => setRevision((v) => v + 1)}
+        />
+      )}
       {error && (
         <div className="notice error" role="alert">
           <p>{error}</p>
@@ -518,13 +525,6 @@ export default function RecordPage({ module }: { module: Module }) {
             )}
           </aside>
         </div>
-      )}
-      {module === 'accounts' && record?.reconciliation_state && id && (
-        <OpeningBalanceReview
-          key={`${id}:${record.row_version}`}
-          accountId={id}
-          onReviewed={() => setRevision((v) => v + 1)}
-        />
       )}
       {related && (
         <section className="records-panel related-records">

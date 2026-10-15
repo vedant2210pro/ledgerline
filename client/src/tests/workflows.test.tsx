@@ -267,6 +267,6 @@ describe('record UI', () => {
     );
     await screen.findByText('Opening balance review required');
     expect(screen.queryByRole('button', { name: 'Save changes' })).toBeNull();
-    expect(screen.getByText('₹125.50')).toBeTruthy();
+    expect(within(screen.getByRole('complementary')).getByText('₹125.50')).toBeTruthy();
   });
 });

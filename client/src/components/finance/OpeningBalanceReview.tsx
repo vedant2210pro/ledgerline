@@ -101,8 +101,9 @@ function ReviewPanel({ accountId, onReviewed }: { accountId: string; onReviewed:
     >
       <h2 id={'opening-review-' + accountId}>Opening balance review</h2>
       <p>
-        Imported balances are preserved from the original database. Review the source and the
-        reconciliation before confirming an opening balance.
+        Step 1: compare the balances below, tick the confirmation and enter a review note. Step 2:
+        confirm the review. Step 3: choose active in the account form below and save. Reviewing an
+        opening balance does not change the amount.
       </p>
       <ErrorNotice message={error || remote.error} />
       {remote.loading && !saved ? (
